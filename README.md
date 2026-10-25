@@ -4,7 +4,7 @@ App Android (Kotlin + Jetpack Compose + Material 3) del caso **DSY1105 · Gesti�
 activaciones corporativas**. Es un MVP académico: **todos los datos son ficticios** (nombres, correos,
 teléfonos, costos y resultados). No se usan RUT, domicilios, correos ni contactos reales.
 
-**Integrantes:** _(completar con nombres del equipo)_
+**Integrantes:** Juan David Motaban - OSVALDO ANTONIO QUIROGA MURCIA
 **Trello:** _(enlace al tablero)_
 
 ## Arquitectura MVVM
