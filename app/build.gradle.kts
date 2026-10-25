@@ -58,8 +58,10 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
+    // Lector QR (ML Kit / Google Code Scanner) y generador de QR (ZXing)
+    implementation(libs.play.services.code.scanner)
+    implementation(libs.zxing.core)
+
 
     testImplementation(libs.junit)
 

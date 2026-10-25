@@ -74,6 +74,51 @@ object ValidadorFormulario {
         ).values.firstOrNull()
     }
 
+    fun erroresUsuario(
+        nombre: String,
+        correo: String,
+        password: String,
+        confirmacion: String,
+        correoExiste: Boolean,
+        esAdministrador: Boolean,
+        codigoAdminValido: Boolean
+    ): Map<String, String> {
+
+        val errores = mutableMapOf<String, String>()
+
+        if (nombre.isBlank()) {
+            errores["nombre"] = "Ingresa tu nombre."
+        } else if (nombre.trim().length < 3) {
+            errores["nombre"] = "El nombre debe tener al menos 3 caracteres."
+        }
+
+        if (correo.isBlank()) {
+            errores["correo"] = "Ingresa tu correo electrónico."
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()) {
+            errores["correo"] = "Ingresa un correo válido (ej: nombre@empresa.cl)."
+        } else if (correoExiste) {
+            errores["correo"] = "Ya existe un usuario con ese correo."
+        }
+
+        if (password.length < 6) {
+            errores["password"] = "La contraseña debe tener al menos 6 caracteres."
+        } else if (password.none { it.isDigit() } || password.none { it.isLetter() }) {
+            errores["password"] = "Debe incluir letras y números."
+        }
+
+        if (confirmacion.isBlank()) {
+            errores["confirmacion"] = "Repite la contraseña."
+        } else if (confirmacion != password) {
+            errores["confirmacion"] = "Las contraseñas no coinciden."
+        }
+
+        if (esAdministrador && !codigoAdminValido) {
+            errores["codigoAdmin"] = "Código de administración incorrecto."
+        }
+
+        return errores
+    }
+
     fun validarOrganizacion(
         nombre: String,
         tipoOrganizacion: String,

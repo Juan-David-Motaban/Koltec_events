@@ -1,206 +1,100 @@
-
 package com.example.myapplication.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.model.Geo
+import com.example.myapplication.model.OrgType
+import com.example.myapplication.ui.components.AppTextField
+import com.example.myapplication.ui.components.DropdownField
+import com.example.myapplication.ui.components.SectionTitle
+import com.example.myapplication.ui.theme.VerdeEstado
+import com.example.myapplication.validation.OrgField
 import com.example.myapplication.viewmodel.OrganizacionViewModel
 
+/** Registro de empresa. Cuando se guarda se informa el id para asociarla al usuario. */
 @Composable
 fun OrganizacionScreen(
-    viewModel: OrganizacionViewModel,
-    onVolver: () -> Unit
+    username: String,
+    onVolver: () -> Unit,
+    onRegistrada: (Int) -> Unit = {},
+    viewModel: OrganizacionViewModel = viewModel()
 ) {
-    var nombre by remember { mutableStateOf("") }
-    var tipo by remember { mutableStateOf("Empresa") }
-    var rubro by remember { mutableStateOf("") }
-    var comuna by remember { mutableStateOf("") }
-    var region by remember { mutableStateOf("") }
-    var sitioWeb by remember { mutableStateOf("") }
-    var publico by remember { mutableStateOf("") }
-    var observaciones by remember { mutableStateOf("") }
-    var mensaje by remember { mutableStateOf("") }
+    val s = viewModel.uiState
+
+    LaunchedEffect(s.exito) {
+        if (s.exito) {
+            viewModel.ultimaRegistradaId?.let { id ->
+                viewModel.vincularConUsuario(username, id)
+                onRegistrada(id)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            "Organizaciones",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
+        Text("Registrar empresa", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+        Text("Registra una empresa u organización para asociarla a tus oportunidades.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        SectionTitle("Datos de la organización")
+        AppTextField("Nombre de la organización *", s.input.nombre, { viewModel.onCampo(OrgField.NOMBRE, it) }, Icons.Filled.Business, error = s.errores[OrgField.NOMBRE])
+
+        DropdownField(
+            label = "Tipo de organización *",
+            selected = OrgType.values().firstOrNull { it.label == s.input.tipo },
+            options = OrgType.values().toList(),
+            optionLabel = { it.label },
+            onSelected = { viewModel.onCampo(OrgField.TIPO, it.label) },
+            icon = Icons.Filled.Category,
+            error = s.errores[OrgField.TIPO]
         )
 
-        Text("Registra empresas e instituciones para tus oportunidades.")
+        AppTextField("Rubro *", s.input.rubro, { viewModel.onCampo(OrgField.RUBRO, it) }, Icons.Filled.Work, error = s.errores[OrgField.RUBRO])
 
-        OutlinedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre de la organización *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+        DropdownField(
+            label = "Comuna *",
+            selected = s.input.comuna.ifBlank { null },
+            options = Geo.comunas.map { it.name },
+            optionLabel = { it },
+            onSelected = { viewModel.onCampo(OrgField.COMUNA, it) },
+            icon = Icons.Filled.Place,
+            error = s.errores[OrgField.COMUNA],
+            helper = Geo.byName(s.input.comuna)?.let { "Región: ${it.region}" }
         )
 
-        OutlinedTextField(
-            value = tipo,
-            onValueChange = { tipo = it },
-            label = { Text("Tipo de organización *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+        AppTextField("Sitio web (opcional)", s.input.sitioWeb, { viewModel.onCampo(OrgField.SITIO_WEB, it) }, Icons.Filled.Language, error = s.errores[OrgField.SITIO_WEB])
+        AppTextField("Público asociado", s.input.publico, { viewModel.onCampo(OrgField.PUBLICO, it) }, Icons.Filled.Groups, error = s.errores[OrgField.PUBLICO])
+        AppTextField("Observaciones", s.input.observaciones, { viewModel.onCampo(OrgField.OBSERVACIONES, it) }, Icons.Filled.Description, error = s.errores[OrgField.OBSERVACIONES], singleLine = false, minLines = 2)
 
-        OutlinedTextField(
-            value = rubro,
-            onValueChange = { rubro = it },
-            label = { Text("Rubro *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        OutlinedTextField(
-            value = comuna,
-            onValueChange = { comuna = it },
-            label = { Text("Comuna *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        OutlinedTextField(
-            value = region,
-            onValueChange = { region = it },
-            label = { Text("Región *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        OutlinedTextField(
-            value = sitioWeb,
-            onValueChange = { sitioWeb = it },
-            label = { Text("Sitio web (opcional)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        OutlinedTextField(
-            value = publico,
-            onValueChange = { publico = it },
-            label = { Text("Público asociado") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        OutlinedTextField(
-            value = observaciones,
-            onValueChange = { observaciones = it },
-            label = { Text("Observaciones") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2
-        )
-
-        if (mensaje.isNotBlank()) {
+        if (s.mensaje != null) {
             Text(
-                mensaje,
-                color = if (mensaje.startsWith("Organización registrada")) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.error
-                }
+                s.mensaje,
+                color = if (s.exito) VerdeEstado else MaterialTheme.colorScheme.error,
+                fontWeight = FontWeight.SemiBold
             )
         }
 
-        Button(
-            onClick = {
-                mensaje = viewModel.registrarOrganizacion(
-                    nombre = nombre,
-                    tipoOrganizacion = tipo,
-                    rubro = rubro,
-                    comuna = comuna,
-                    region = region,
-                    sitioWeb = sitioWeb,
-                    publicoAsociado = publico,
-                    observaciones = observaciones
-                )
-
-                if (mensaje == "Organización registrada correctamente.") {
-                    nombre = ""
-                    tipo = "Empresa"
-                    rubro = ""
-                    comuna = ""
-                    region = ""
-                    sitioWeb = ""
-                    publico = ""
-                    observaciones = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Guardar organización")
+        Button(onClick = viewModel::registrar, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(15.dp)) {
+            Text("GUARDAR EMPRESA", fontWeight = FontWeight.Bold)
         }
-
-        Text(
-            "Organizaciones registradas: ${viewModel.organizaciones.size}",
-            fontWeight = FontWeight.Bold
-        )
-
-        if (viewModel.organizaciones.isEmpty()) {
-            Text("Todavía no hay organizaciones registradas.")
-        } else {
-            viewModel.organizaciones.forEach { organizacion ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        Text(
-                            organizacion.nombre,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                        Text("Tipo: ${organizacion.tipoOrganizacion}")
-                        Text("Rubro: ${organizacion.rubro}")
-                        Text("Ubicación: ${organizacion.comuna}, ${organizacion.region}")
-
-                        if (organizacion.sitioWeb.isNotBlank()) {
-                            Text("Web: ${organizacion.sitioWeb}")
-                        }
-
-                        if (organizacion.publicoAsociado.isNotBlank()) {
-                            Text("Público: ${organizacion.publicoAsociado}")
-                        }
-
-                        if (organizacion.observaciones.isNotBlank()) {
-                            Text("Observaciones: ${organizacion.observaciones}")
-                        }
-                    }
-                }
-            }
-        }
-
-        OutlinedButton(
-            onClick = onVolver,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Volver al inicio")
+        OutlinedButton(onClick = onVolver, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(15.dp)) {
+            Text("VOLVER")
         }
     }
 }

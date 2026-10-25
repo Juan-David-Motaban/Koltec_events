@@ -1,42 +1,16 @@
-
 package com.example.myapplication.repository
 
+import com.example.myapplication.App
 import com.example.myapplication.model.Organizacion
 
+/** Empresas / organizaciones guardadas en SQLite. */
 class OrganizacionRepository {
+    private val dao get() = App.container.dao
 
-    private val organizaciones = mutableListOf<Organizacion>()
+    fun obtenerTodas(): List<Organizacion> = dao.getOrganizations()
 
-    fun obtenerTodas(): List<Organizacion> {
-        return organizaciones.toList()
-    }
+    fun buscarPorId(id: Int): Organizacion? = dao.getOrganization(id)
 
-    fun agregar(organizacion: Organizacion) {
-        organizaciones.add(organizacion)
-    }
-
-    fun actualizar(organizacionActualizada: Organizacion): Boolean {
-        val indice = organizaciones.indexOfFirst {
-            it.id == organizacionActualizada.id
-        }
-
-        if (indice == -1) {
-            return false
-        }
-
-        organizaciones[indice] = organizacionActualizada
-        return true
-    }
-
-    fun eliminar(id: Int): Boolean {
-        return organizaciones.removeAll {
-            it.id == id
-        }
-    }
-
-    fun buscarPorId(id: Int): Organizacion? {
-        return organizaciones.find {
-            it.id == id
-        }
-    }
+    /** Guarda la organización y devuelve su id. */
+    fun agregar(organizacion: Organizacion): Int = dao.insertOrganization(organizacion).toInt()
 }
